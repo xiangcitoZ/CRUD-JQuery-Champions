@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div id="menu"></div>
+    <h1 class="text-center mt-2" id="title"></h1>
+    <div id="mySection"></div>
+
+    <script src="../js/jquery-3.6.1.min.js"></script>
+    <script>
+        var urlChampions = "https://apichampions.azurewebsites.net";
+        const parameters = new URLSearchParams(window.location.search);
+        const idApuesta = parameters.get("idApuesta");
+
+        $(document).ready(function(){
+            $("#menu").load("menu.html");
+            switch (parameters.get("accion")) {
+                case "1": 
+                    createForm();
+                    document.title = "Crear apuesta";
+                break;
+                case "2": 
+                    modifyForm();
+                    document.title = "Modificar apuesta";
+                break;
+                case "3": 
+                    deleteBet();
+                    document.title = "Eliminar apuesta";
+                break;
+                default:
+                    alert("Error. Accion no encontrada")
+                    break;
+            }
+        })
+
+        function throwBet() {
+            var userName = $("#inputUser").val();
+            var resultName = $("#inputResult").val();
+            var dateName = $("#inputDate").val();
+            
+            const apuesta = {
+                "idApuesta": (parameters.get("accion") == "1")? 1 : parseInt(idApuesta),
+                "usuario": userName,
+                "resultado": resultName,
+                "fecha": dateName
+            }
+
+            /*
+                Otra opción sería, crear un objeto:
+                var apuesta = new Object();
+                apuesta.idApuesta = 1;
+                apuesta.usuario = userName;
+                ...
+            */
+
+            const myJson = JSON.stringify(apuesta);
+
+            $.ajax({
+                'url' : urlChampions + "/api/Apuestas",
+                'method' : (parameters.get("accion") == "1")? "POST" : "PUT",
+                'data' : myJson,
+                "contentType": "application/json",
+                success : function() {
+                    window.location.replace("apuestas.html");
+                }
+            });
+        }
+
+        // No queremos que el formulario nos recargue la página. Queremos realizar otras acciones
+        // y posteriormente, nosotros navegaremos a la página de apuestas. Para lograr este objetivo
+        // incluiremos en la propiedad onSubmit el 'return false'
+        function createForm() {
+            $("#title").text('CREAR APUESTA');
+            var form = $("<form>", {
+                'class' : "border rounded w-75 mx-auto mt-1 text-center",
+                'onSubmit' : "throwBet();return false;"
+            });
+
+            var label_1 = $("<label>", { 'text' : "Usuario", "class" : "form-label mt-2" });
+            var input_1 = $("<input>", { 'type' : "text", 
+                                        "class" : "form-control mx-auto w-75",
+                                        "required" : "", id : "inputUser"});
+
+            var label_2 = $("<label>", { 'text' : "Resultado", "class" : "form-label mt-2" });
+            var input_2 = $("<input>", { 'type' : "text", 
+                                        "class" : "form-control mx-auto w-75",
+                                        "required" : "", id : "inputResult"});
+
+            var label_3 = $("<label>", { 'text' : "Fecha", "class" : "form-label mt-2" });
+            var input_3 = $("<input>", { 'type' : "text", 
+                                        "class" : "form-control mx-auto w-75",
+                                        "required" : "", id : "inputDate"});
+
+            var button = $("<button>", { 'class' : "btn btn-warning my-3", 
+                                         'text' : "Apostar" });
+            
+            var backBtn = $("<a>", {
+                'class' : "btn btn-primary my-3 mx-1",
+                'text' : "Volver",
+                'href' : "apuestas.html"
+            });
+            
+            form.append(label_1, input_1,label_2, input_2,label_3, input_3, button, backBtn);
+            $("#mySection").append(form);
+
+        }
+
+        function modifyForm() {
+            createForm();
+            $("#title").text('MODIFICAR APUESTA');
+            $.ajax({
+                'url' : urlChampions + "/api/Apuestas/" + idApuesta,
+                'method' : "GET",
+                "data": "JSON",
+                success : function(data) {
+                    $("#inputUser").val(data.usuario);
+                    $("#inputResult").val(data.resultado);
+                    $("#inputDate").val(data.fecha);
+                }
+            });
+        }
+
+        function deleteBet() {
+            $("#title").text('ELIMINAR APUESTA');
+
+            // Sección de controles
+            var text = $("<p>", {
+                'text' : "¿Está seguro de que desea eliminar esta apuesta?\nEsta acción NO es reversible.",
+                'class' : "h4 text-center text-bg-danger py-2"
+            });
+
+            var btnDiv = $("<div>", {
+                'class' : "text-center"
+            });
+
+            var confirmBtn = $("<button>", {
+                'class' : "btn btn-outline-danger my-2 mx-1",
+                'text' : "Confirmar",
+                'onClick' : "confirmDelete()"
+            });
+
+            var backBtn = $("<a>", {
+                'class' : "btn btn-primary my-2 mx-1",
+                'text' : "Volver",
+                'href' : "apuestas.html"
+            });
+
+            // Sección de información
+            $.ajax({
+                'url' : urlChampions + "/api/Apuestas/" + idApuesta,
+                'method' : "GET",
+                "data": "JSON",
+                success : function(data) {
+                    var p = $("<p>", {
+                        'text' : "ID: " + idApuesta + 
+                                 ", Usuario: " + data.usuario +
+                                 ", Resultado: " + data.resultado + 
+                                 ", Fecha: " + data.fecha,
+                        'class' : "h6 text-center"
+                    });
+
+                    // Uniones
+                    btnDiv.append(confirmBtn, backBtn);
+                    $("#mySection").append(text, p, btnDiv);
+                }
+            });
+        }
+
+        function confirmDelete() {
+            $.ajax({
+                "url": urlChampions + "/api/Apuestas/" + idApuesta,
+                "type": "DELETE", 
+                success: function() { 
+                    window.location.replace("apuestas.html");
+                }
+            })
+        }
+
+    </script>
+
+</body>
+</html>

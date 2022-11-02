@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jugador</title>
+</head>
+<body>
+    <div id="menu"></div>
+    <div class="border w-75 mx-auto mt-3 rounded">
+        <h1 class="text-bg-light text-center mb-2 py-2 border " id="playerName"></h1>
+        <img id="playerImage" class="rounded mx-auto d-block" style="max-height: 20vh;"/>
+        <h3 id="playerPosition" class="mx-auto mt-2 text-center"></h3>
+        <p id="playerDate" class="mx-3 text-center fs-6"></p>
+        <p id="playerCountry" class="mx-3 text-center fs-6"></p>
+        <div class="mx-auto mb-3 text-center">
+            <a id="btnJugadores" class="btn btn-success">Jugadores</a> &nbsp;
+        </div>
+    </div>
+    <script src="../js/jquery-3.6.1.min.js"></script>
+    <script>
+         var urlChampions = "https://apichampions.azurewebsites.net";
+
+        $(document).ready(function(){
+            $("#menu").load("menu.html");
+            loadPlayer();
+        })
+
+        const parameters = new URLSearchParams(window.location.search);
+        function loadPlayer() {
+            var idJugador = parameters.get("idJugador");
+            var request = "/api/Jugadores/" + idJugador;
+            $.ajax({
+                'url' : urlChampions + request,
+                'method' : "GET",
+                'dataType' : 'JSON',
+                success : function(data) {
+                    document.title = "Jugador: " + data.nombre;
+                    $("#playerName").text(data.nombre);
+
+                    $("#playerImage").attr("src",data.imagen);
+                    $("#playerPosition").text(data.posicion);
+                    $("#playerDate").text("Fecha de Nacimiento: " + data.fechaNacimiento);
+                    $("#playerCountry").text("País: " + data.pais);
+                    
+                    $("#btnJugadores").attr("href","jugadores.html?idEquipo=" + data.idEquipo);
+                }
+            });
+        }
+
+
+    </script>
+</body>
+</html>

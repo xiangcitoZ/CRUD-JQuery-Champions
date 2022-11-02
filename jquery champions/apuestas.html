@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div id="menu"></div>
+    <div class="mx-auto text-center my-2">
+        <a id="btnVolver" class="btn btn-primary">Volver</a> &nbsp;     
+        <a id="btnCreate" class="btn btn-success">Create</a>        
+    </div>
+    <table id="tableBets" class="table border w-75 mx-auto align-middle">
+        <thead>
+            <tr class="table-primary text-center">
+                <th>Usuario</th>
+                <th>Resultado</th>
+                <th>Fecha</th>
+                <th class="table-warning" >Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script src="../js/jquery-3.6.1.min.js"></script>
+
+    <script>
+        var urlChampions = "https://apichampions.azurewebsites.net";
+
+        $(document).ready(function(){
+            $("#menu").load("menu.html");
+            loadBets();
+        })
+
+        const parameters = new URLSearchParams(window.location.search);
+        function loadBets() {
+            var request = "/api/Apuestas/";
+            $.ajax({
+                'url' : urlChampions + request,
+                'method' : "GET",
+                'dataType' : 'JSON',
+                success : function(data) {
+                    $.each(data, function(index, apuesta) { // No hay palabra para el array así que solo 'data'
+                        $("#btnCreate").attr('href',"accionapuesta.html?accion=1");
+                        
+                        var tr = $("<tr>", { 'class' : "text-center" });
+
+                        var tdUser = $("<td>", { 'text' : apuesta.usuario });
+                        var tdResult = $("<td>", { 'text' : apuesta.resultado });
+                        var tdDate = $("<td>", { 'text' : apuesta.fecha });
+
+                        var tdActions = $("<td>");
+                        
+                        
+                        var btnModify = $("<a>", { 
+                            'text' : "Modify",  
+                            'href' : "accionapuesta.html?accion=2&idApuesta=" + apuesta.idApuesta,
+                            'class' : "btn btn-outline-warning my-1 mx-1"
+                        });
+
+                        var btnDelete = $("<a>", { 
+                            'text' : "Delete",  
+                            'href' : "accionapuesta.html?accion=3&idApuesta=" + apuesta.idApuesta,
+                            'class' : "btn btn-outline-danger my-1 mx-1"
+                        });
+
+                        btnModify.appendTo(tdActions);
+                        btnDelete.appendTo(tdActions);
+                        
+                        tr.append(tdUser, tdResult, tdDate, tdActions);
+                        $("#tableBets tbody").append(tr);
+                    });
+                    $("#btnVolver").attr("href","home.html");
+                }
+            });
+        }
+
+
+    </script>
+
+
+
+</body>
+</html>

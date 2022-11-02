@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!--BOOSTRAP-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">CRUD JQuery</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="home.html">Home</a>
+              </li>
+    
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="apuestas.html">Apuestas</a>
+              </li>
+    
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Equipos
+                </a>
+                <ul class="dropdown-menu" id="equiposDropdown">
+                  <!-- <li><a class="dropdown-item" href="#">Action</a></li> Esto es lo que queremos generar dinámicamente -->
+                </ul>
+              </li>
+    
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <script src="../js/jquery-3.6.1.min.js"></script> <!-- SIEMPRE LO PRIMERO EL JQUERY -->
+  <!-- BOOTSTRAP -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+
+      <script>
+        var urlChampions = "https://apichampions.azurewebsites.net";
+        $(document).ready(function(){
+            getEquipos();
+        })
+        
+        function getEquipos(){
+            var request = "/api/Equipos";
+            $.ajax({
+                "url": urlChampions + request,
+                "method":"GET",
+                "dataType":"JSON",
+                success:function(data){
+
+                    $.each(data,function(index,equipo){
+
+                        var li = $("<li>");
+                            var a = $("<a>",{
+                                "class":"dropdown-item",
+                                "href":"equipos.html?idEquipo=" + equipo.idEquipo,
+                                "text": equipo.nombre 
+                                
+                            });
+                            console.log(equipo.idEquipo)
+                            console.log(equipo.nombre)
+                            li.append(a);
+                            $("#equiposDropdown").append(li);
+                    })
+
+
+                }
+            })
+        }
+
+
+      </script>
+
+
+</body>
+</html>
